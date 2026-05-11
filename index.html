@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>社區團購系統</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-5">
+    <div id="app" class="max-w-2xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6 text-center text-blue-600">社區互動團購網</h1>
+
+        <!-- 區塊：發起開團 -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <h2 class="text-xl font-semibold mb-4">📢 我要開團</h2>
+            <input v-model="newGroup.title" placeholder="團購名稱 (例如：日本草莓團)" class="w-full border p-2 rounded mb-3">
+            <div v-for="(p, index) in newGroup.products" :key="index" class="flex mb-2">
+                <input v-model="p.name" placeholder="商品名稱" class="flex-1 border p-2 rounded-l">
+                <input v-model.number="p.price" type="number" placeholder="單價" class="w-24 border p-2 border-l-0">
+                <button @click="newGroup.products.splice(index, 1)" class="bg-red-500 text-white px-3 rounded-r">X</button>
+            </div>
+            <button @click="addProduct" class="text-blue-500 text-sm mb-4">+ 新增商品項目</button>
+            <button @click="createGroup" class="w-full bg-blue-600 text-white py-2 rounded font-bold">正式開團</button>
+        </div>
+
+        <!-- 區塊：進行中的團購 -->
+        <h2 class="text-xl font-semibold mb-4">🛒 進行中的團購</h2>
+        <div v-for="group in groups" :key="group.id" class="bg-white p-6 rounded-lg shadow-md mb-4">
+            <h3 class="text-2xl font-bold text-gray-800">{{ group.title }}</h3>
+            <div class="mt-4 border-t pt-4">
+                <h4 class="font-bold mb-2">我要參團：</h4>
+                <div class="grid grid-cols-3 gap-2 mb-3">
+                    <input v-model="orderForm[group.id].name" placeholder="姓名" class="border p-2 rounded">
+                    <input v-model="orderForm[group.id].phone" placeholder="電話" class="border p-2 rounded">
+                    <input v-model="orderForm[group.id].unit" placeholder="戶別 (如:A棟10F)" class="border p-2 rounded">
+                </div>
+                <div v-for="p in group.products" :key="p.name" class="flex justify-between items-center mb-2 bg-gray-50 p-2 rounded">
+                    <span>{{ p.name }} (${{ p.price }})</span>
+                    <input type="number" v-model.number="orderForm[group.id].items[p.name]" min="0" class="w-20 border p-1 rounded text-center">
+                </div>
+                <button @click="submitOrder(group.id)" class="w-full bg-green-500 text-white py-2 rounded mt-2">送出訂單</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createClient } = supabase;
+        const _supabase = createClient('YOUR_SUPABASE_URL', 'YOUR_SUPABASE_KEY');
+
+        Vue.createApp({
+            data() {
+                return {
+                    groups: [],
+                    newGroup: { title: '', products: [{ name: '', price: 0 }] },
+                    orderForm: {}
+                }
+            },
+            methods: {
+                addProduct() { this.newGroup.products.push({ name: '', price: 0 }); },
+                async fetchGroups() {
+                    const { data } = await _supabase.from('groups').select('*').order('created_at', { ascending: false });
+                    this.groups = data;
+                    data.forEach(g => {
+                        if (!this.orderForm[g.id]) {
+                            this.orderForm[g.id] = { name: '', phone: '', unit: '', items: {} };
+                        }
+                    });
+                },
+                async createGroup() {
+                    if (!this.newGroup.title) return alert('請輸入團購名稱');
+                    await _supabase.from('groups').insert([this.newGroup]);
+                    this.newGroup = { title: '', products: [{ name: '', price: 0 }] };
+                    this.fetchGroups();
+                    alert('開團成功！');
+                },
+                async submitOrder(groupId) {
+                    const form = this.orderForm[groupId];
+                    if (!form.name || !form.phone) return alert('請填寫完整資訊');
+                    await _supabase.from('orders').insert([{
+                        group_id: groupId,
+                        name: form.name,
+                        phone: form.phone,
+                        unit: form.unit,
+                        items: form.items
+                    }]);
+                    alert('訂購成功！');
+                    this.orderForm[groupId] = { name: '', phone: '', unit: '', items: {} };
+                }
+            },
+            mounted() { this.fetchGroups(); }
+        }).mount('#app')
+    </script>
+</body>
+</html>
