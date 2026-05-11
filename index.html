@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>社區團購管理系統 V5.3</title>
+    <title>團購管理系統 V5.3</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -113,9 +113,9 @@
 
                     <div class="bg-blue-50 p-6 rounded-xl mb-6 border border-blue-100">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                            <input v-model="orderForm[g.id].name" placeholder="您的姓名" class="border p-3 rounded-lg bg-white">
-                            <input v-model="orderForm[g.id].phone" placeholder="連絡電話" class="border p-3 rounded-lg bg-white">
-                            <input v-model="orderForm[g.id].unit" placeholder="戶別" class="border p-3 rounded-lg bg-white">
+                            <input v-model="orderForm[g.id].name" placeholder="您的姓名/英文" class="border p-3 rounded-lg bg-white">
+                            <input v-model="orderForm[g.id].phone" placeholder="連絡電話/分機" class="border p-3 rounded-lg bg-white">
+                            <input v-model="orderForm[g.id].unit" placeholder="戶別/部門" class="border p-3 rounded-lg bg-white">
                         </div>
                         <div v-for="(p, idx) in g.products" :key="idx" class="flex justify-between items-center bg-white p-3 rounded-lg mb-2 border border-slate-100 shadow-sm">
                             <span class="font-bold">{{ p.name }} <small class="text-slate-400">({{ p.spec }})</small> <b class="ml-2 text-red-500">${{ p.price }}</b></span>
@@ -127,7 +127,7 @@
                     <div class="border-t pt-4">
                         <p class="font-bold mb-3 text-slate-500">📋 目前登記名單：</p>
                         <table class="w-full text-sm border bg-white rounded-lg">
-                            <thead class="bg-slate-100"><tr><th class="p-3 border text-left">姓名</th><th class="p-3 border text-left">戶別</th><th class="p-3 border text-left">訂購內容</th></tr></thead>
+                            <thead class="bg-slate-100"><tr><th class="p-3 border text-left">姓名</th><th class="p-3 border text-left">戶別/部門</th><th class="p-3 border text-left">訂購內容</th></tr></thead>
                             <tbody>
                                 <tr v-for="o in getOrdersByGroup(g.id)" :key="o.id">
                                     <td class="p-3 border font-bold">{{ o.name }}</td>
