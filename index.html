@@ -9,7 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>[v-cloak] { display: none; }</style>
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body class="bg-gray-100 text-gray-800">
     <div id="app" v-cloak class="flex min-h-screen">
         <aside class="w-64 bg-slate-900 text-white flex-shrink-0 shadow-xl">
             <div class="p-6 text-xl font-bold border-b border-slate-700 text-blue-400">團購系統選單</div>
@@ -27,142 +27,136 @@
         </aside>
 
         <main class="flex-1 p-8 overflow-y-auto">
+            
             <section v-if="currentPage === 'create'">
-                <h2 class="text-3xl font-bold mb-6">建立新活動</h2>
-                <div class="bg-white p-8 rounded-xl shadow-md max-w-4xl">
+                <h2 class="text-3xl font-bold mb-6">發起新活動</h2>
+                <div class="bg-white p-8 rounded-xl shadow-md max-w-4xl border">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div>
-                            <label class="block font-bold mb-2">活動標題 <span class="text-red-500">*</span></label>
-                            <input v-model="newGroup.title" placeholder="如：週五小農蔬果團" class="w-full border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            <label class="block font-bold mb-2">活動標題 *</label>
+                            <input v-model="newGroup.title" placeholder="如：小農鮮奶團" class="w-full border p-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
                         <div>
-                            <label class="block font-bold mb-2">截止日期 <span class="text-red-500">*</span></label>
-                            <input type="date" v-model="newGroup.deadline" class="w-full border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            <label class="block font-bold mb-2 text-red-600">管理密碼 * (修改時需使用)</label>
+                            <input type="password" v-model="newGroup.admin_password" placeholder="請設定 4-8 位密碼" class="w-full border p-3 rounded-lg border-red-200">
+                        </div>
+                        <div>
+                            <label class="block font-bold mb-2">截止日期 *</label>
+                            <input type="date" v-model="newGroup.deadline" class="w-full border p-3 rounded-lg">
                         </div>
                         <div>
                             <label class="block font-bold mb-2">參考網址 (選填)</label>
                             <input v-model="newGroup.group_url" placeholder="https://..." class="w-full border p-3 rounded-lg">
                         </div>
-                        <div>
-                            <label class="block font-bold mb-2 text-red-600">管理密碼 <span class="text-red-500">*</span></label>
-                            <input type="password" v-model="newGroup.admin_password" placeholder="修改資料時需輸入" class="w-full border p-3 rounded-lg border-red-200">
-                        </div>
                     </div>
                     <div class="mb-6">
-                        <label class="block font-bold mb-2">詳細說明 (取貨地點/時間)</label>
-                        <textarea v-model="newGroup.description" rows="3" class="w-full border p-3 rounded-lg shadow-sm" placeholder="請輸入重要資訊..."></textarea>
+                        <label class="block font-bold mb-2">團購詳細資訊 (如：取貨地點)</label>
+                        <textarea v-model="newGroup.description" rows="3" class="w-full border p-3 rounded-lg" placeholder="請輸入說明..."></textarea>
                     </div>
 
-                    <p class="font-bold mb-3 flex items-center">📦 商品項目清單：</p>
+                    <p class="font-bold mb-3">📦 設定商品：</p>
                     <div v-for="(p, i) in newGroup.products" :key="i" class="flex gap-2 mb-3 bg-gray-50 p-2 rounded">
                         <input v-model="p.name" placeholder="產品名稱" class="flex-grow border p-2 rounded">
                         <input v-model="p.spec" placeholder="規格" class="w-32 border p-2 rounded">
                         <input v-model.number="p.price" type="number" placeholder="單價" class="w-24 border p-2 rounded">
-                        <button @click="newGroup.products.splice(i, 1)" v-if="newGroup.products.length > 1" class="bg-red-500 text-white px-4 rounded hover:bg-red-600">✕</button>
+                        <button @click="newGroup.products.splice(i, 1)" v-if="newGroup.products.length > 1" class="bg-red-500 text-white px-4 rounded">✕</button>
                     </div>
-                    <button @click="newGroup.products.push({name:'',spec:'',price:0})" class="text-blue-600 font-bold mb-8 hover:underline cursor-pointer">+ 新增更多商品</button>
+                    <button @click="newGroup.products.push({name:'',spec:'',price:0})" class="text-blue-600 font-bold mb-8">+ 新增商品</button>
                     
-                    <button @click="createGroup" :disabled="loading" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-xl hover:bg-blue-700 shadow-lg disabled:bg-gray-400">
+                    <button @click="createGroup" :disabled="loading" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-xl hover:bg-blue-700 disabled:bg-gray-400">
                         {{ loading ? '開團中...' : '確認發起團購' }}
                     </button>
                 </div>
             </section>
 
             <section v-if="currentPage === 'list'">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-3xl font-bold">目前進行中的活動</h2>
-                    <button @click="fetchGroups" class="text-blue-500 hover:rotate-180 transition duration-500">🔄 重新整理</button>
-                </div>
-                
-                <div v-if="groups.length === 0" class="bg-white p-10 rounded-xl text-center shadow">尚無活動，趕快去開一團吧！</div>
+                <h2 class="text-3xl font-bold mb-6">進行中的活動</h2>
+                <div v-if="groups.length === 0" class="text-center py-20 text-gray-500">目前沒有活動，請先點擊左側「我要開團」</div>
 
-                <div v-for="g in groups" :key="g.id" class="bg-white p-6 rounded-xl shadow-md border mb-8 border-l-8 border-l-blue-500">
-                    <div class="flex flex-wrap justify-between items-start mb-4">
+                <div v-for="g in groups" :key="g.id" class="bg-white p-6 rounded-xl shadow-md border mb-8 border-l-8 border-blue-500">
+                    <div class="flex justify-between items-start mb-4">
                         <div>
                             <h3 class="text-2xl font-bold text-gray-900">{{ g.title }}</h3>
-                            <p class="text-gray-500 mt-1">截止日期：<span class="text-red-500 font-bold">{{ g.deadline }}</span></p>
-                            <p class="text-sm bg-gray-100 p-3 mt-3 rounded italic">{{ g.description }}</p>
+                            <p class="text-red-500 font-bold mt-1">⏳ 截止日期：{{ g.deadline }}</p>
                         </div>
-                        <a v-if="g.group_url" :href="g.group_url" target="_blank" class="text-blue-600 underline text-sm">🔗 原始連結</a>
+                        <button @click="exportCSV(g.id, g.title)" class="bg-slate-800 text-white px-4 py-2 rounded-lg text-sm hover:bg-black transition">
+                            📊 匯出 CSV (Excel 對帳單)
+                        </button>
                     </div>
+                    <div class="bg-gray-50 p-3 rounded mb-6 italic text-sm text-gray-600">{{ g.description }}</div>
 
-                    <div class="bg-blue-50 p-5 rounded-lg mb-6">
-                        <h4 class="font-bold text-blue-800 mb-3 underline">我要訂購：</h4>
+                    <div class="bg-blue-50 p-5 rounded-lg mb-6 border border-blue-100">
+                        <h4 class="font-bold text-blue-800 mb-4">✍️ 我要參團：</h4>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                            <input v-model="orderForm[g.id].name" placeholder="姓名" class="border p-2 rounded">
-                            <input v-model="orderForm[g.id].phone" placeholder="電話" class="border p-2 rounded">
-                            <input v-model="orderForm[g.id].unit" placeholder="戶別 (如:A1-10F)" class="border p-2 rounded">
+                            <input v-model="orderForm[g.id].name" placeholder="姓名" class="border p-2 rounded shadow-sm">
+                            <input v-model="orderForm[g.id].phone" placeholder="電話" class="border p-2 rounded shadow-sm">
+                            <input v-model="orderForm[g.id].unit" placeholder="戶別" class="border p-2 rounded shadow-sm">
                         </div>
-                        <div v-for="p in g.products" class="flex justify-between items-center bg-white p-3 rounded mb-2 shadow-sm">
+                        <div v-for="p in g.products" class="flex justify-between items-center bg-white p-3 rounded mb-2 shadow-sm border border-gray-100">
                             <span>{{ p.name }} <small class="text-gray-400">({{ p.spec }})</small> <b class="ml-2 text-red-500">${{ p.price }}</b></span>
-                            <input type="number" v-model.number="orderForm[g.id].items[p.name]" min="0" class="w-20 border text-center rounded p-1 font-bold">
+                            <input type="number" v-model.number="orderForm[g.id].items[p.name]" min="0" class="w-20 border text-center rounded p-1 font-bold border-blue-200">
                         </div>
-                        <button @click="submitOrder(g.id)" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold mt-2 shadow hover:bg-green-700">送出參團訂單</button>
+                        <button @click="submitOrder(g.id)" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold mt-2 hover:bg-green-700 shadow-md">送出訂單</button>
                     </div>
 
                     <div class="border-t pt-4">
-                        <div class="flex justify-between items-center mb-3">
-                            <span class="font-bold flex items-center">📝 已收到訂單 ({{ orders.filter(o => o.group_id === g.id).length }} 筆)：</span>
-                            <button @click="exportCSV(g.id, g.title)" class="bg-gray-800 text-white px-4 py-1 rounded text-sm hover:bg-black">匯出 CSV (Excel)</button>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-sm text-left border rounded">
-                                <thead class="bg-gray-200">
-                                    <tr><th class="p-2 border">姓名</th><th class="p-2 border">戶別</th><th class="p-2 border">內容</th></tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="o in orders.filter(x => x.group_id === g.id)" class="hover:bg-gray-50">
-                                        <td class="p-2 border font-bold">{{ o.name }}</td>
-                                        <td class="p-2 border">{{ o.unit }}</td>
-                                        <td class="p-2 border text-blue-700">
-                                            <span v-for="(qty, item) in o.items" v-show="qty > 0">【{{ item }} x {{ qty }}】</span>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                        <p class="font-bold mb-3 text-gray-700">📋 已登記名單 (請確認資料是否存入)：</p>
+                        <table class="w-full text-sm border rounded overflow-hidden shadow-sm">
+                            <thead class="bg-gray-100">
+                                <tr><th class="p-2 border">姓名</th><th class="p-2 border">戶別</th><th class="p-2 border">內容</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="o in orders.filter(x => x.group_id === g.id)" class="hover:bg-gray-50 transition">
+                                    <td class="p-2 border font-medium">{{ o.name }}</td>
+                                    <td class="p-2 border text-gray-600">{{ o.unit }}</td>
+                                    <td class="p-2 border text-blue-600">
+                                        <span v-for="(qty, item) in o.items" v-show="qty > 0">【{{ item }} x {{ qty }}】</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </section>
 
             <section v-if="currentPage === 'manage'">
-                <h2 class="text-3xl font-bold mb-6">活動管理與修正</h2>
+                <h2 class="text-3xl font-bold mb-6">活動後台管理</h2>
                 <div v-for="g in groups" :key="g.id" class="bg-white p-6 rounded-lg shadow-sm border mb-4 flex flex-col md:flex-row justify-between items-center">
                     <div>
-                        <span class="font-bold text-lg">{{ g.title }}</span>
-                        <span class="ml-4 text-xs text-gray-400 font-mono">ID: {{ g.id }}</span>
+                        <span class="font-bold text-lg text-slate-700">{{ g.title }}</span>
+                        <span class="ml-4 text-xs text-gray-400">ID: {{ g.id }}</span>
                     </div>
-                    <button @click="startEdit(g)" class="bg-slate-700 text-white px-6 py-2 rounded-lg mt-2 md:mt-0">編輯內容</button>
+                    <button @click="startEdit(g)" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition">修改內容</button>
 
-                    <div v-if="editingId === g.id" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                        <div class="bg-white p-6 rounded-xl w-full max-w-lg shadow-2xl">
-                            <h3 class="text-xl font-bold mb-4">修改活動：{{ g.title }}</h3>
-                            <div class="mb-4">
-                                <label class="block text-sm font-bold text-red-600 mb-1">請輸入原設定的管理密碼：</label>
-                                <input type="password" v-model="editPassword" class="border-2 border-red-200 p-3 w-full rounded focus:border-red-500 outline-none">
+                    <div v-if="editingId === g.id" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+                        <div class="bg-white p-8 rounded-2xl w-full max-w-lg shadow-2xl animate-in fade-in zoom-in duration-300">
+                            <h3 class="text-2xl font-bold mb-6">🔧 編輯活動資料</h3>
+                            <div class="mb-6">
+                                <label class="block text-sm font-bold text-red-600 mb-2">請輸入管理密碼驗證：</label>
+                                <input type="password" v-model="editPassword" class="border-2 border-red-100 p-3 w-full rounded-lg focus:border-red-500 outline-none">
                             </div>
                             <div class="mb-4">
-                                <label class="block text-sm font-bold mb-1">修改標題：</label>
-                                <input v-model="editData.title" class="border p-2 w-full rounded">
+                                <label class="block text-sm font-bold mb-2">活動標題：</label>
+                                <input v-model="editData.title" class="border p-3 w-full rounded-lg">
                             </div>
-                            <div class="mb-4">
-                                <label class="block text-sm font-bold mb-1">修改詳細說明：</label>
-                                <textarea v-model="editData.description" rows="3" class="border p-2 w-full rounded"></textarea>
+                            <div class="mb-6">
+                                <label class="block text-sm font-bold mb-2">詳細說明：</label>
+                                <textarea v-model="editData.description" rows="4" class="border p-3 w-full rounded-lg"></textarea>
                             </div>
-                            <div class="flex gap-2">
-                                <button @click="saveEdit(g.id, g.admin_password)" class="flex-1 bg-green-600 text-white py-3 rounded font-bold">儲存變更</button>
-                                <button @click="editingId = null" class="flex-1 bg-gray-300 py-3 rounded font-bold">取消</button>
+                            <div class="flex gap-4">
+                                <button @click="saveEdit(g.id, g.admin_password)" class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700">儲存變更</button>
+                                <button @click="editingId = null" class="flex-1 bg-gray-200 py-3 rounded-xl font-bold">取消</button>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
+
         </main>
     </div>
 
     <script>
         const { createClient } = supabase;
-        // 已串接你提供的金鑰
         const SUPABASE_URL = 'https://uftrlttffbbsnmouwaax.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_2yxSuQdKlTYOrQ8QwxDBuQ_pKGhSmvl';
         const _supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -195,7 +189,7 @@
                     if (!this.newGroup.title || !this.newGroup.deadline || !this.newGroup.admin_password) return alert('標題、日期與密碼為必填項目');
                     this.loading = true;
                     const { error } = await _supabase.from('groups').insert([this.newGroup]);
-                    if (error) alert('開團失敗：' + error.message);
+                    if (error) alert('失敗：' + error.message);
                     else {
                         alert('✅ 開團成功！');
                         this.newGroup = { title: '', description: '', deadline: '', group_url: '', admin_password: '', products: [{ name: '', spec: '', price: 0 }] };
@@ -207,14 +201,11 @@
                 async submitOrder(groupId) {
                     const form = this.orderForm[groupId];
                     if (!form.name || !form.phone) return alert('姓名與電話為必填');
-                    const hasItems = Object.values(form.items).some(v => v > 0);
-                    if (!hasItems) return alert('請至少填寫一個產品數量');
-
                     const { error } = await _supabase.from('orders').insert([{ group_id: groupId, ...form }]);
                     if (error) alert(error.message);
                     else {
-                        alert('✅ 訂購成功，感謝參團！');
-                        this.orderForm[groupId].items = {}; // 清空數量欄位
+                        alert('✅ 訂購成功！');
+                        this.orderForm[groupId].items = {};
                         this.fetchGroups();
                     }
                 },
@@ -225,11 +216,10 @@
                         const items = Object.entries(o.items).filter(([k, v]) => v > 0).map(([k, v]) => `${k}(${v})`).join(' ');
                         csv += `"${o.name}","${o.phone}","${o.unit}","${items}"\n`;
                     });
-                    // 加入 UTF-8 BOM 避免 Excel 亂碼
                     const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
                     const link = document.createElement("a");
                     link.href = URL.createObjectURL(blob);
-                    link.download = `團購名單_${title}.csv`;
+                    link.download = `訂單明細_${title}.csv`;
                     link.click();
                 },
                 startEdit(group) {
@@ -238,7 +228,7 @@
                     this.editPassword = '';
                 },
                 async saveEdit(id, originalPwd) {
-                    if (this.editPassword !== originalPwd) return alert('❌ 密碼錯誤，拒絕儲存！');
+                    if (this.editPassword !== originalPwd) return alert('❌ 密碼錯誤！');
                     const { error } = await _supabase.from('groups').update({
                         title: this.editData.title,
                         description: this.editData.description
