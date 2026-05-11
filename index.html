@@ -82,9 +82,9 @@
                     <div v-if="expandedGroupId === g.id" class="mt-6">
                         <div class="bg-blue-50 p-6 rounded-xl mb-6 shadow-inner border border-blue-100">
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                                <input v-model="orderForm[g.id].name" placeholder="您的姓名" class="border p-3 rounded-lg bg-white">
-                                <input v-model="orderForm[g.id].phone" placeholder="連絡電話" class="border p-3 rounded-lg bg-white">
-                                <input v-model="orderForm[g.id].unit" placeholder="戶別" class="border p-3 rounded-lg bg-white">
+                                <input v-model="orderForm[g.id].name" placeholder="您的姓名/英文" class="border p-3 rounded-lg bg-white">
+                                <input v-model="orderForm[g.id].phone" placeholder="連絡電話/分機" class="border p-3 rounded-lg bg-white">
+                                <input v-model="orderForm[g.id].unit" placeholder="戶別/部門" class="border p-3 rounded-lg bg-white">
                             </div>
                             <div v-for="(p, idx) in g.products" :key="idx" class="flex justify-between items-center bg-white p-3 rounded-lg mb-2 border shadow-sm">
                                 <span>{{ p.name }} <small class="text-slate-400">({{ p.spec }})</small> <b class="ml-2 text-red-500">${{ p.price }}</b></span>
@@ -96,7 +96,7 @@
                             <p class="font-bold mb-3 text-slate-500">📋 目前登記名單：</p>
                             <table class="w-full text-sm border bg-white rounded-lg overflow-hidden">
                                 <thead class="bg-slate-100 font-bold">
-                                    <tr><th class="p-3 border">姓名</th><th class="p-3 border">戶別</th><th class="p-3 border text-center">件數</th><th class="p-3 border">明細</th><th class="p-3 border">管理</th></tr>
+                                    <tr><th class="p-3 border">姓名</th><th class="p-3 border">戶別/部門</th><th class="p-3 border text-center">件數</th><th class="p-3 border">明細</th><th class="p-3 border">管理</th></tr>
                                 </thead>
                                 <tbody>
                                     <tr v-for="o in getOrdersByGroup(g.id)" :key="o.id">
