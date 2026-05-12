@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>團購管理系統 V7.5</title>
+    <title>團購管理系統</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -19,7 +19,7 @@
         <header class="lg:hidden bg-slate-900 text-white p-4 flex justify-between items-center sticky top-0 z-30 shadow-md">
             <div class="font-bold text-blue-400">團購管理系統</div>
             <button @click="isMobileMenuOpen = !isMobileMenuOpen" class="p-2 bg-slate-800 rounded text-sm outline-none">
-                <span v-if="!isMobileMenuOpen">☰ 選單</span><span v-else>✕ 關閉</span>
+                <span>{{ isMobileMenuOpen ? '✕ 關閉' : '☰ 選單' }}</span>
             </button>
         </header>
 
@@ -37,7 +37,7 @@
                 </div>
                 <div class="p-6 text-xs text-slate-500 border-t border-slate-800 text-center">
                     <p>Copyright Jeff Teng 2026</p>
-                    <p class="mt-1 opacity-60">Version 7.5 Stable</p>
+                    <p class="mt-1 opacity-60">Version 8.1 Stable</p>
                 </div>
             </aside>
 
@@ -45,45 +45,60 @@
 
             <main class="flex-1 p-3 lg:p-8 lg:ml-64 overflow-y-auto min-h-screen">
                 
-                <section v-if="currentPage === 'create'" class="max-w-4xl mx-auto">
+                <section v-if="currentPage === 'create'" class="max-w-4xl mx-auto animate-in fade-in duration-500">
                     <h2 class="text-2xl lg:text-3xl font-bold mb-6 text-slate-800">發起新活動</h2>
                     <div class="bg-white p-4 lg:p-8 rounded-xl shadow-sm border border-slate-200">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 mb-6">
-                            <div><label class="block font-bold mb-1">活動標題 *</label><input v-model="newGroup.title" class="w-full border p-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"></div>
-                            <div class="relative"><label class="block font-bold mb-1 text-red-600">管理密碼 *</label>
-                                <input :type="showCreatePwd ? 'text' : 'password'" v-model="newGroup.admin_password" class="w-full border p-3 rounded-lg outline-none pr-10 focus:ring-2 focus:ring-red-200">
+                            <div class="md:col-span-2"><label class="block font-bold mb-1 text-sm">活動標題 *</label><input v-model="newGroup.title" class="w-full border p-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"></div>
+                            
+                            <div><label class="block font-bold mb-1 text-sm text-blue-600">開放填單時間 (GMT+8) *</label><input type="datetime-local" v-model="newGroup.start_time" class="w-full border p-3 rounded-lg"></div>
+                            <div><label class="block font-bold mb-1 text-sm">截止填單日期 *</label><input type="date" v-model="newGroup.deadline" class="w-full border p-3 rounded-lg"></div>
+                            
+                            <div><label class="block font-bold mb-1 text-sm">開團負責人 *</label><input v-model="newGroup.creator" placeholder="姓名/戶別" class="w-full border p-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"></div>
+                            
+                            <div class="relative">
+                                <label class="block font-bold mb-1 text-red-600 text-sm">設定管理密碼 *</label>
+                                <input :type="showCreatePwd ? 'text' : 'password'" v-model="newGroup.admin_password" class="w-full border p-3 rounded-lg outline-none pr-10 border-red-100 focus:ring-2 focus:ring-red-200" placeholder="後續管理時需輸入">
                                 <button @click="showCreatePwd = !showCreatePwd" type="button" class="absolute right-3 top-9 lg:top-10 text-slate-400">{{ showCreatePwd ? '👁️' : '🙈' }}</button>
+                                <p class="text-[10px] text-slate-400 mt-1">※ 重要：4-6碼數字，此密碼供您日後「修改訂單」或「結單」使用，請務必記牢。</p>
                             </div>
-                            <div><label class="block font-bold mb-1">發起人 *</label><input v-model="newGroup.creator" placeholder="姓名或戶別" class="w-full border p-3 rounded-lg outline-none"></div>
-                            <div><label class="block font-bold mb-1">截止日期 *</label><input type="date" v-model="newGroup.deadline" class="w-full border p-3 rounded-lg"></div>
-                            <div class="md:col-span-2"><label class="block font-bold mb-1 text-blue-600">介紹網頁連結</label><input v-model="newGroup.group_url" placeholder="http://..." class="w-full border p-3 rounded-lg"></div>
-                            <div class="md:col-span-2"><label class="block font-bold mb-1">團購詳細資訊 *</label><textarea v-model="newGroup.description" rows="3" class="w-full border p-3 rounded-lg" placeholder="說明、規則..."></textarea></div>
+                            
+                            <div><label class="block font-bold mb-1 text-sm">負責人聯絡電話 *</label><input v-model="newGroup.creator_phone" placeholder="手機或分機" class="w-full border p-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"></div>
+                            
+                            <div class="md:col-span-2"><label class="block font-bold mb-1 text-blue-600 text-sm">介紹網頁連結 (選填)</label><input v-model="newGroup.group_url" placeholder="http://..." class="w-full border p-3 rounded-lg"></div>
+                            <div class="md:col-span-2"><label class="block font-bold mb-1 text-sm">活動詳細資訊 *</label><textarea v-model="newGroup.description" rows="3" class="w-full border p-3 rounded-lg" placeholder="說明、匯款規則..."></textarea></div>
                         </div>
-                        <p class="font-bold mb-3">📦 設定商品項目：</p>
-                        <div v-for="(p, i) in newGroup.products" :key="i" class="mb-4 bg-slate-50 p-3 lg:p-2 rounded-lg border border-slate-100 shadow-sm">
+
+                        <p class="font-bold mb-3 flex items-center text-slate-700">📦 商品清單設定：</p>
+                        <div v-for="(p, i) in newGroup.products" :key="i" class="mb-4 bg-slate-50 p-3 rounded-lg border border-slate-100 shadow-sm">
                             <div class="flex flex-col lg:flex-row gap-2">
-                                <input v-model="p.name" placeholder="品名" class="flex-[3] border p-2 rounded text-sm lg:text-base outline-none focus:bg-white">
-                                <div class="flex gap-2 w-full lg:flex-1">
-                                    <input v-model="p.spec" placeholder="規格 (如:插電款)" class="flex-1 border p-2 rounded text-sm lg:text-base">
-                                    <input v-model.number="p.price" type="number" placeholder="單價" class="w-24 border p-2 rounded text-center font-bold">
-                                    <button @click="newGroup.products.splice(i, 1)" v-if="newGroup.products.length > 1" class="bg-red-100 text-red-500 px-3 rounded">✕</button>
+                                <input v-model="p.name" placeholder="品名" class="flex-[3] border p-2 rounded text-sm focus:bg-white outline-none">
+                                <div class="flex gap-2 w-full lg:flex-2">
+                                    <input v-model="p.spec" placeholder="規格" class="flex-1 border p-2 rounded text-sm outline-none">
+                                    <div class="flex items-center bg-white border rounded px-2 w-28">
+                                        <span class="text-slate-400 mr-1">$</span>
+                                        <input v-model.number="p.price" type="number" placeholder="單價" class="w-full outline-none font-bold text-center">
+                                    </div>
+                                    <button @click="newGroup.products.splice(i, 1)" v-if="newGroup.products.length > 1" class="bg-red-50 text-red-500 px-3 rounded border border-red-100">✕</button>
                                 </div>
                             </div>
                         </div>
-                        <button @click="newGroup.products.push({name:'',spec:'',price:0})" class="text-blue-500 font-bold mb-8 hover:underline">+ 新增商品項目</button>
-                        <button @click="createGroup" :disabled="loading" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-xl shadow-lg hover:bg-blue-700 transition active:scale-95">確認發起團購</button>
+                        <button @click="newGroup.products.push({name:'',spec:'',price:0})" class="text-blue-500 font-bold mb-8 hover:underline text-sm">+ 新增品項</button>
+                        <button @click="createGroup" :disabled="loading" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-xl shadow-lg hover:bg-blue-700 transition">發起活動</button>
                     </div>
                 </section>
 
-                <section v-if="currentPage === 'list'" class="max-w-4xl mx-auto">
+                <section v-if="currentPage === 'list'" class="max-w-4xl mx-auto animate-in fade-in duration-500">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-xl lg:text-3xl font-bold">進行中的活動</h2>
-                        <button @click="fetchAllData" class="text-blue-600 rotate-center font-bold text-sm">🔄 重新整理</button>
+                        <button @click="fetchAllData" class="text-blue-600 rotate-center font-bold text-sm">🔄 刷新</button>
                     </div>
                     
-                    <div v-if="activeGroups.length === 0" class="py-20 text-center text-slate-400 bg-white rounded-xl border border-dashed">目前沒有活動</div>
+                    <div v-if="activeDisplayGroups.length === 0" class="py-20 text-center text-slate-400 bg-white rounded-xl border border-dashed">目前沒有活動</div>
                     
-                    <div v-for="g in activeGroups" :key="g.id" class="bg-white p-4 lg:p-6 rounded-xl shadow-md border mb-8 border-l-8 border-blue-500">
+                    <div v-for="g in activeDisplayGroups" :key="g.id" class="bg-white p-4 lg:p-6 rounded-xl shadow-md border mb-8 border-l-8 border-blue-500 relative overflow-hidden">
+                        <div v-if="isPreOpen(g.start_time)" class="absolute top-0 right-0 bg-orange-500 text-white px-4 py-1 rounded-bl-xl font-bold text-xs">⏰ 開放時間：{{ formatTime(g.start_time) }}</div>
+
                         <div class="flex flex-col lg:flex-row justify-between items-start mb-4 gap-3">
                             <div>
                                 <h3 class="text-xl lg:text-2xl font-bold text-slate-900">{{ g.title }}</h3>
@@ -92,31 +107,28 @@
                             </div>
                             <div class="flex flex-row lg:flex-col gap-2 w-full lg:w-auto">
                                 <div v-if="g.group_url" class="flex flex-col items-end w-full">
-                                    <a :href="g.group_url" target="_blank" class="w-full lg:w-auto bg-blue-600 text-white px-3 py-2 rounded-lg text-xs font-bold text-center shadow-sm">🔗 網頁</a>
-                                    <p class="text-[10px] text-slate-400 mt-1 break-all max-w-[200px] text-right">{{ g.group_url }}</p>
+                                    <a :href="g.group_url" target="_blank" class="w-full lg:w-auto bg-blue-600 text-white px-3 py-2 rounded-lg text-xs font-bold text-center shadow-sm">🔗 查看網頁</a>
+                                    <p class="text-[10px] text-slate-400 mt-1 break-all max-w-[250px] text-right">{{ g.group_url }}</p>
                                 </div>
-                                <button @click="exportCSV(g.id, g.title)" class="flex-1 lg:flex-none bg-slate-800 text-white px-3 py-2 rounded-lg text-xs shadow-sm">📊 匯出</button>
+                                <button @click="exportCSV(g.id, g.title)" class="flex-1 lg:flex-none bg-slate-800 text-white px-3 py-2 rounded-lg text-xs shadow-sm">📊 匯出對帳</button>
                             </div>
                         </div>
                         <div class="bg-slate-50 p-4 rounded-lg text-sm whitespace-pre-wrap text-slate-700 leading-relaxed mb-4 border border-slate-200">{{ g.description }}</div>
                         
-                        <button @click="expandedGroupId = (expandedGroupId === g.id ? null : g.id)" class="w-full bg-blue-50 text-blue-600 py-3 rounded-lg border-2 border-dashed border-blue-200 font-bold hover:bg-blue-100 transition">
+                        <button v-if="!isPreOpen(g.start_time)" @click="expandedGroupId = (expandedGroupId === g.id ? null : g.id)" class="w-full bg-blue-50 text-blue-600 py-3 rounded-lg border-2 border-dashed border-blue-200 font-bold hover:bg-blue-100 transition">
                             {{ expandedGroupId === g.id ? '▲ 收起報名表' : '👇 點我展開跟團報名表' }}
                         </button>
+                        <div v-else class="w-full bg-slate-100 text-slate-400 py-3 rounded-lg border-2 border-dashed border-blue-200 font-bold text-center italic">系統準備中...</div>
                         
-                        <div v-if="expandedGroupId === g.id" class="mt-6 animate-in fade-in">
+                        <div v-if="expandedGroupId === g.id" class="mt-6">
                             <div class="bg-blue-50 p-4 lg:p-6 rounded-xl mb-6 shadow-inner border border-blue-100">
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
-                                    <input v-model="orderForm[g.id].name" placeholder="您的姓名/英文" class="border p-3 rounded-lg bg-white outline-none focus:ring-2 focus:ring-blue-300">
-                                    <input v-model="orderForm[g.id].phone" placeholder="連絡電話/分機" class="border p-3 rounded-lg bg-white outline-none focus:ring-2 focus:ring-blue-300">
+                                    <input v-model="orderForm[g.id].name" placeholder="您的姓名" class="border p-3 rounded-lg bg-white outline-none focus:ring-2 focus:ring-blue-300">
+                                    <input v-model="orderForm[g.id].phone" placeholder="連絡電話" class="border p-3 rounded-lg bg-white outline-none focus:ring-2 focus:ring-blue-300">
                                     <input v-model="orderForm[g.id].unit" placeholder="部門/戶別" class="border p-3 rounded-lg bg-white outline-none focus:ring-2 focus:ring-blue-300">
                                 </div>
                                 <div v-for="(p, idx) in g.products" :key="idx" class="flex justify-between items-center bg-white p-3 rounded-lg mb-2 shadow-sm border border-slate-100">
-                                    <span class="text-sm font-bold text-slate-700">
-                                        {{ p.name }} 
-                                        <small v-if="p.spec" class="text-slate-400 font-normal">({{ p.spec }})</small> 
-                                        <b class="ml-2 text-red-500">${{ p.price }}</b>
-                                    </span>
+                                    <span class="text-sm font-bold text-slate-700">{{ p.name }} <small v-if="p.spec" class="text-slate-400">({{p.spec}})</small> <b class="ml-2 text-red-500">${{ p.price }}</b></span>
                                     <input type="number" v-model.number="orderForm[g.id].items[idx]" min="0" class="w-16 border text-center rounded font-bold border-blue-200 outline-none">
                                 </div>
                                 <button @click="submitOrder(g.id, g.products)" class="w-full bg-green-600 text-white py-4 rounded-xl font-bold mt-4 shadow-lg active:scale-95 transition">確認送出訂單</button>
@@ -129,9 +141,9 @@
                                     </thead>
                                     <tbody>
                                         <tr v-for="o in getOrdersByGroup(g.id)" :key="o.id" class="border-b last:border-0 hover:bg-slate-50 transition text-center">
-                                            <td class="p-2 lg:p-3 border-r font-bold text-left text-slate-900">{{ o.name }}</td>
-                                            <td class="p-2 lg:p-3 border-r text-slate-500 text-left">{{ o.phone }}</td>
-                                            <td class="p-2 lg:p-3 border-r text-slate-500 text-left">{{ o.unit }}</td>
+                                            <td class="p-2 lg:p-3 border-r font-bold text-left">{{ o.name }}</td>
+                                            <td class="p-2 lg:p-3 border-r text-left">{{ o.phone }}</td>
+                                            <td class="p-2 lg:p-3 border-r text-left">{{ o.unit }}</td>
                                             <td class="p-2 lg:p-3 border-r font-bold text-slate-700">{{ calculateTotalQty(o.items) }}</td>
                                             <td class="p-2 lg:p-3 border-r font-bold text-red-600">${{ calculateSubtotal(o.items, g.products) }}</td>
                                             <td class="p-2 lg:p-3 border-r text-blue-600 text-[10px] text-left"><span v-for="(qty, key) in o.items" v-show="qty > 0" class="mr-1">【{{key}}x{{qty}}】</span></td>
@@ -144,34 +156,82 @@
                     </div>
                 </section>
 
-                <section v-if="currentPage === 'manage'" class="max-w-4xl mx-auto">
-                    <h2 class="text-2xl lg:text-3xl font-bold mb-6 text-slate-800">管理活動</h2>
-                    <div v-for="g in groups" :key="g.id" class="bg-white p-4 lg:p-6 rounded-xl shadow-sm border mb-4 flex flex-col lg:flex-row justify-between items-center transition" :class="{'opacity-50 grayscale bg-slate-100': g.is_archived}">
-                        <div class="mb-4 lg:mb-0"><span class="font-bold text-lg text-slate-700">{{ g.title }}</span><span v-if="g.is_archived" class="ml-2 bg-slate-400 text-white px-2 py-0.5 rounded text-xs">已封存</span></div>
-                        <div class="flex gap-2 w-full lg:w-auto"><button @click="startEdit(g)" class="flex-1 lg:flex-none bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">編輯</button><button @click="openActionModal('archive', g, g)" class="flex-1 lg:flex-none bg-slate-500 text-white px-4 py-2 rounded-lg hover:bg-slate-600 transition">{{ g.is_archived ? '恢復' : '封存' }}</button></div>
+                <section v-if="currentPage === 'manage'" class="max-w-4xl mx-auto animate-in slide-in-from-bottom-4 duration-500">
+                    <h2 class="text-2xl lg:text-3xl font-bold mb-6 text-slate-800">活動管理中心</h2>
+                    
+                    <h3 class="font-bold text-blue-600 mb-3 border-b border-blue-100 pb-1">進行中團購 (依截止日排序)</h3>
+                    <div v-for="g in activeManagedGroups" :key="g.id" class="bg-white p-4 lg:p-5 rounded-xl shadow-sm border border-l-4 border-l-blue-500 mb-4 flex flex-col lg:flex-row justify-between items-center hover:border-blue-300 transition">
+                        <div class="mb-4 lg:mb-0"><span class="font-bold text-lg text-slate-700">{{ g.title }}</span><span class="ml-2 bg-green-500 text-white px-2 py-0.5 rounded text-[10px] font-bold">進行中</span><p class="text-[10px] text-slate-400 mt-1 italic">截止日：{{ g.deadline }}</p></div>
+                        <div class="flex gap-2 w-full lg:w-auto"><button @click="startEdit(g)" class="flex-1 lg:flex-none bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">編輯</button><button @click="openActionModal('archive', g, g)" class="flex-1 lg:flex-none bg-slate-500 text-white px-4 py-2 rounded-lg hover:bg-slate-600 transition font-bold">提前結單</button></div>
+                    </div>
+
+                    <div v-if="closedManagedGroups.length > 0">
+                        <div class="my-10 border-t-2 border-dashed border-slate-300 relative"><span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-slate-50 px-4 text-slate-500 font-bold text-sm italic">已結單活動 (7 天內)</span></div>
+                        <div v-for="g in closedManagedGroups" :key="g.id" class="bg-white p-4 lg:p-5 rounded-xl border mb-4 flex flex-col lg:flex-row justify-between items-center opacity-75 border-l-4 border-l-slate-400">
+                            <div><span class="font-bold text-slate-700">{{ g.title }}</span><span class="ml-2 bg-slate-400 text-white px-2 py-0.5 rounded text-[10px] font-bold">已結單</span></div>
+                            <button @click="openActionModal('archive', g, g)" class="w-full lg:w-auto bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition font-bold">恢復活動</button>
+                        </div>
+                    </div>
+
+                    <div v-if="archivedHistoryGroups.length > 0" class="mt-12 pt-10 border-t border-slate-200">
+                        <h3 class="font-bold text-slate-400 mb-3 italic text-xs">📜 歷史封存 (結單 > 7天)</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div v-for="g in archivedHistoryGroups" :key="g.id" class="bg-slate-100 p-4 rounded-lg text-slate-500 text-sm flex justify-between items-center border border-slate-200">
+                                <span>{{ g.title }} <small class="text-[10px]">({{ g.deadline }})</small></span>
+                                <button @click="openActionModal('archive', g, g)" class="text-blue-500 text-xs font-bold hover:underline">恢復</button>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
                 <section v-if="currentPage === 'super_admin'" class="max-w-4xl mx-auto">
-                    <h2 class="text-2xl lg:text-3xl font-bold mb-6 text-purple-700">🔑 後台管理系統</h2>
+                    <h2 class="text-2xl lg:text-3xl font-bold mb-6 text-purple-700 text-center">🔑 後台管理系統</h2>
                     <div v-if="!superAdminAuthenticated" class="bg-white p-10 rounded-xl shadow-md border max-w-md mx-auto text-center">
-                        <p class="mb-4 font-bold text-slate-600 text-lg">最高權限驗證</p>
+                        <p class="mb-4 font-bold text-slate-600">最高權限驗證</p>
                         <div class="relative max-w-xs mx-auto mb-4">
-                            <input :type="showSuperPwd ? 'text' : 'password'" v-model="superAdminPwdInput" @keyup.enter="verifySuperAdmin" class="w-full border p-3 rounded-lg text-center text-3xl tracking-widest focus:ring-2 focus:ring-purple-500 outline-none">
+                            <input :type="showSuperPwd ? 'text' : 'password'" v-model="superAdminPwdInput" @keyup.enter="verifySuperAdmin" class="w-full border p-3 rounded-lg text-center text-3xl tracking-widest focus:ring-2 focus:ring-purple-500">
                             <button @click="showSuperPwd = !showSuperPwd" type="button" class="absolute right-3 top-3 text-2xl text-slate-400">{{ showSuperPwd ? '👁️' : '🙈' }}</button>
                         </div>
-                        <button @click="verifySuperAdmin" class="w-full bg-purple-600 text-white py-4 rounded-lg font-bold shadow-lg hover:bg-purple-700 transition">登入系統</button>
+                        <button @click="verifySuperAdmin" class="w-full bg-purple-600 text-white py-4 rounded-lg font-bold">進入系統</button>
                     </div>
                     <div v-else>
-                        <div class="bg-purple-50 p-6 rounded-xl border-2 border-purple-200 mb-8 max-w-lg">
-                            <h3 class="font-bold text-purple-800 mb-4 flex items-center">🛡️ 修改超級密碼</h3>
-                            <div class="relative mb-4"><input :type="showNewRootPwd ? 'text' : 'password'" v-model="newRootPwd" class="w-full border p-2 rounded-lg outline-none pr-10 focus:ring-2 focus:ring-purple-400" placeholder="輸入新密碼">
-                            <button @click="showNewRootPwd = !showNewRootPwd" class="absolute right-3 top-2 text-xl text-slate-400">{{ showNewRootPwd ? '👁️' : '🙈' }}</button></div>
-                            <button @click="updateRootPwd" class="bg-purple-600 text-white px-6 py-2 rounded-lg font-bold text-sm shadow-md">儲存新密碼</button>
+                        <div class="bg-purple-50 p-6 rounded-xl border border-purple-200 mb-8 flex flex-col md:flex-row items-center justify-between gap-4">
+                            <span class="font-bold text-purple-800 whitespace-nowrap">更換最高權限密碼：</span>
+                            <div class="relative flex-1 w-full max-w-md">
+                                <input :type="showNewRootPwd ? 'text' : 'password'" v-model="newRootPwd" class="w-full border border-purple-200 p-3 rounded-lg outline-none pr-10 focus:ring-2 focus:ring-purple-400" placeholder="請輸入新密碼">
+                                <button @click="showNewRootPwd = !showNewRootPwd" type="button" class="absolute right-3 top-3 text-xl text-slate-400">{{ showNewRootPwd ? '👁️' : '🙈' }}</button>
+                            </div>
+                            <button @click="updateRootPwd" class="w-full md:w-auto bg-purple-600 text-white px-8 py-3 rounded-lg font-bold shadow hover:bg-purple-700 transition">儲存新密碼</button>
                         </div>
-                        <div class="bg-white rounded-xl shadow-md border overflow-hidden mb-8"><table class="w-full text-xs lg:text-sm text-left"><thead class="bg-purple-50 text-purple-700 font-bold"><tr><th class="p-4 border">活動</th><th class="p-4 border">發起人</th><th class="p-4 border text-center">操作</th></tr></thead><tbody><tr v-for="g in groups" :key="g.id" class="border-b hover:bg-purple-50 transition cursor-pointer" @click="viewDetail(g)"><td class="p-4 font-bold">{{ g.title }}</td><td class="p-4">{{ g.creator }}</td><td class="p-4 text-center"><button class="bg-blue-500 text-white px-3 py-1 rounded text-xs font-bold shadow-sm">對帳</button></td></tr></tbody></table></div>
-                        <div v-if="selectedGroupOrders" class="bg-white p-6 rounded-xl shadow-lg border-2 border-purple-200 animate-in fade-in"><div class="flex justify-between items-center mb-6 font-bold text-purple-800 text-lg">📊 {{ selectedGroup.title }} 明細<button @click="selectedGroupOrders = null" class="text-3xl text-slate-400 hover:text-red-500 transition">✕</button></div>
-                        <div class="overflow-x-auto"><table class="w-full text-xs border text-center"><thead class="bg-slate-50 font-bold"><tr><th class="p-2 border text-left">姓名</th><th class="p-2 border text-left">電話</th><th class="p-2 border">件數</th><th class="p-2 border text-red-600 text-center">金額</th><th class="p-2 border text-left">內容</th></tr></thead><tbody><tr v-for="o in selectedGroupOrders" class="border-b hover:bg-slate-50 transition"><td class="p-2 border font-bold text-left text-slate-900">{{ o.name }}</td><td class="p-2 border text-left">{{ o.phone }}</td><td class="p-2 border text-center font-bold">{{ calculateTotalQty(o.items) }}</td><td class="p-2 border font-bold text-red-600 text-center">${{ calculateSubtotal(o.items, selectedGroup.products) }}</td><td class="p-2 border text-[10px] text-blue-600 text-left">{{ o.items }}</td></tr></tbody></table></div></div>
+
+                        <div class="bg-white rounded-xl shadow-md border overflow-hidden mb-8">
+                            <table class="w-full text-[10px] lg:text-xs text-left">
+                                <thead class="bg-purple-50 text-purple-700 font-bold border-b">
+                                    <tr>
+                                        <th class="p-3 border-r">開團日期 (GMT+8)</th>
+                                        <th class="p-3 border-r">結單日期</th>
+                                        <th class="p-3 border-r">開團負責人</th>
+                                        <th class="p-3 border-r">電話</th>
+                                        <th class="p-3 border-r">管理密碼</th>
+                                        <th class="p-3 text-center">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="g in sortedGroupsForAdmin" :key="g.id" class="border-b hover:bg-purple-50 transition cursor-pointer" @click="viewDetail(g)">
+                                        <td class="p-3 border-r font-mono">{{ formatDate(g.start_time) }}</td>
+                                        <td class="p-3 border-r font-mono text-slate-400">{{ g.deadline }}</td>
+                                        <td class="p-3 border-r font-bold text-slate-700">{{ g.creator }}</td>
+                                        <td class="p-3 border-r font-mono text-slate-500">{{ g.creator_phone }}</td>
+                                        <td class="p-3 border-r text-orange-600 font-bold font-mono">{{ g.admin_password }}</td>
+                                        <td class="p-3 text-center"><button class="bg-blue-500 text-white px-2 py-1 rounded text-[10px]">對帳</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div v-if="selectedGroupOrders" class="bg-white p-6 rounded-xl shadow-lg border-2 border-purple-200 animate-in fade-in">
+                            <div class="flex justify-between items-center mb-6 font-bold text-purple-800 text-lg">📊 {{ selectedGroup.title }} 明細<button @click="selectedGroupOrders = null" class="text-3xl text-slate-400 hover:text-red-500 transition">✕</button></div>
+                            <div class="overflow-x-auto"><table class="w-full text-xs border text-center"><thead class="bg-slate-50 font-bold"><tr><th class="p-2 border text-left">姓名</th><th class="p-2 border text-left">電話</th><th class="p-2 border">件數</th><th class="p-2 border text-red-600 text-center">金額</th><th class="p-2 border text-left">內容</th></tr></thead><tbody><tr v-for="o in selectedGroupOrders" class="border-b hover:bg-slate-50 transition text-center"><td class="p-2 border font-bold text-left">{{ o.name }}</td><td class="p-2 border text-left font-mono">{{ o.phone }}</td><td class="p-2 border text-center font-bold">{{ calculateTotalQty(o.items) }}</td><td class="p-2 border font-bold text-red-600 text-center">${{ calculateSubtotal(o.items, selectedGroup.products) }}</td><td class="p-2 border text-[10px] text-blue-600 text-left">{{ o.items }}</td></tr></tbody></table></div>
+                        </div>
                     </div>
                 </section>
             </main>
@@ -180,22 +240,20 @@
         <div v-if="actionModal.show" class="fixed inset-0 bg-black/70 flex items-center justify-center z-[60] p-4">
             <div class="bg-white p-6 rounded-2xl w-full max-w-md shadow-2xl border-t-8 border-orange-500 overflow-y-auto max-h-[90vh]">
                 <h3 class="text-xl font-bold mb-2">{{ actionModal.title }}</h3>
-                <p class="text-sm text-slate-500 mb-6">{{ actionModal.message }}</p>
+                <p class="text-sm text-slate-500 mb-6 leading-relaxed">{{ actionModal.message }}</p>
 
                 <div v-if="actionModal.type === 'edit_order' && actionModal.authenticated" class="space-y-4 mb-6 animate-in fade-in">
-                    <div class="bg-slate-50 p-4 rounded-lg space-y-3 border border-slate-200">
-                        <p class="text-xs font-bold text-orange-600 italic">◆ 鄰居資料修正</p>
-                        <div><label class="block text-xs text-slate-400">姓名</label><input v-model="actionModal.targetOrder.name" class="w-full border p-2 rounded outline-none focus:bg-white"></div>
-                        <div><label class="block text-xs text-slate-400">電話</label><input v-model="actionModal.targetOrder.phone" class="w-full border p-2 rounded outline-none focus:bg-white"></div>
-                        <div><label class="block text-xs text-slate-400">部門/戶別</label><input v-model="actionModal.targetOrder.unit" class="w-full border p-2 rounded outline-none focus:bg-white"></div>
+                    <div class="bg-slate-50 p-4 rounded-lg space-y-3 border border-slate-200 shadow-inner">
+                        <p class="text-xs font-bold text-orange-600 italic">◆ 資料修正</p>
+                        <input v-model="actionModal.targetOrder.name" class="w-full border p-2 rounded outline-none" placeholder="姓名">
+                        <input v-model="actionModal.targetOrder.phone" class="w-full border p-2 rounded outline-none" placeholder="電話">
+                        <input v-model="actionModal.targetOrder.unit" class="w-full border p-2 rounded outline-none" placeholder="部門/戶別">
                     </div>
                     <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
-                        <p class="text-xs font-bold text-blue-600 mb-3 italic">◆ 購買規格與數量修正</p>
-                        <div v-for="(p, idx) in actionModal.targetGroup.products" :key="idx" class="flex justify-between items-center mb-2 border-b border-blue-100 pb-2 last:border-0">
-                            <span class="text-xs font-medium text-slate-600">
-                                {{ p.name }} <small v-if="p.spec" class="text-slate-400">({{ p.spec }})</small>
-                            </span>
-                            <input type="number" min="0" v-model.number="actionModal.editItems[p.spec ? p.name+'('+p.spec+')' : p.name]" class="w-16 border text-center rounded text-sm p-1 font-bold border-blue-200 focus:bg-white outline-none">
+                        <p class="text-xs font-bold text-blue-600 mb-3 italic">◆ 購買明細修正</p>
+                        <div v-for="(p, idx) in actionModal.targetGroup.products" :key="idx" class="flex justify-between items-center mb-2 border-b border-blue-50 pb-2 last:border-0">
+                            <span class="text-xs font-medium text-slate-600">{{ p.name }} <small v-if="p.spec">({{p.spec}})</small></span>
+                            <input type="number" min="0" v-model.number="actionModal.editItems[p.spec ? p.name+'('+p.spec+')' : p.name]" class="w-16 border text-center rounded text-sm p-1 font-bold border-blue-200 outline-none">
                         </div>
                     </div>
                 </div>
@@ -217,24 +275,24 @@
 
         <div v-if="editingId" class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
             <div class="bg-white p-6 lg:p-8 rounded-2xl w-full max-w-3xl shadow-2xl max-h-[90vh] overflow-y-auto">
-                <h3 class="text-xl font-bold mb-6 text-slate-800">🔧 編輯活動基本資料</h3>
+                <h3 class="text-xl font-bold mb-6 text-slate-800">🔧 編輯活動資料</h3>
                 <div class="mb-6 relative">
                     <label class="block text-sm font-bold text-red-600 mb-2">管理密碼驗證：</label>
                     <input :type="showEditPwd ? 'text' : 'password'" v-model="editPassword" class="border-2 border-red-100 p-3 w-full rounded-lg outline-none pr-10 focus:border-red-500">
                     <button @click="showEditPwd = !showEditPwd" type="button" class="absolute right-3 top-10 text-xl text-slate-400">{{ showEditPwd ? '👁️' : '🙈' }}</button>
                 </div>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-                    <input v-model="editData.title" class="border p-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-100" placeholder="標題">
-                    <input type="date" v-model="editData.deadline" class="border p-3 rounded-lg outline-none focus:ring-2 focus:ring-blue-100">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div class="md:col-span-2"><label class="text-[10px] text-slate-400">活動標題</label><input v-model="editData.title" class="w-full border p-2 rounded"></div>
+                    <div><label class="text-[10px] text-slate-400">截止日期</label><input type="date" v-model="editData.deadline" class="w-full border p-2 rounded"></div>
+                    <div><label class="text-[10px] text-slate-400">開放時間 (GMT+8)</label><input type="datetime-local" v-model="editData.start_time" class="w-full border p-2 rounded"></div>
+                    <div><label class="text-[10px] text-slate-400">負責人電話</label><input v-model="editData.creator_phone" class="w-full border p-2 rounded"></div>
                 </div>
-                <textarea v-model="editData.description" rows="3" class="border p-3 w-full rounded-lg mb-4 outline-none focus:ring-2 focus:ring-blue-100" placeholder="活動說明"></textarea>
-                
-                <p class="font-bold mb-2 flex justify-between">📦 商品項目調整：<button @click="editData.products.push({name:'',spec:'',price:0})" class="text-blue-500 text-sm font-bold hover:underline">+ 新增</button></p>
-                <div v-for="(p, i) in editData.products" :key="i" class="flex gap-2 mb-2 bg-slate-50 p-2 rounded">
+                <textarea v-model="editData.description" rows="3" class="border p-3 w-full rounded-lg mb-4 outline-none focus:ring-2 focus:ring-blue-100"></textarea>
+                <div v-for="(p, i) in editData.products" :key="i" class="flex gap-2 mb-2 bg-slate-50 p-2 rounded border">
                     <input v-model="p.name" class="flex-[2] border p-2 rounded text-sm" placeholder="品名">
                     <input v-model="p.spec" class="flex-1 border p-2 rounded text-sm" placeholder="規格">
                     <input v-model.number="p.price" class="w-20 border p-2 rounded text-sm text-center font-bold">
-                    <button @click="editData.products.splice(i, 1)" class="text-red-400 px-2 hover:bg-red-50 transition">✕</button>
+                    <button @click="editData.products.splice(i, 1)" class="text-red-400 px-2 hover:bg-red-50 rounded">✕</button>
                 </div>
                 <div class="flex gap-4 mt-8 pt-6 border-t"><button @click="saveEdit(editingId, editData.admin_password)" class="flex-1 bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 shadow-md">儲存修改</button><button @click="editingId = null" class="flex-1 bg-slate-200 py-3 rounded-xl font-bold">取消</button></div>
             </div>
@@ -251,7 +309,7 @@
             data() {
                 return {
                     currentPage: 'list', isMobileMenuOpen: false, expandedGroupId: null, groups: [], orders: [], orderForm: {}, loading: false,
-                    newGroup: { title: '', description: '', deadline: '', creator: '', group_url: '', admin_password: '', products: [{ name: '', spec: '', price: 0 }] },
+                    newGroup: { title: '', description: '', deadline: '', creator: '', creator_phone: '', start_time: '', group_url: '', admin_password: '', products: [{ name: '', spec: '', price: 0 }] },
                     superAdminAuthenticated: false, superAdminPwdInput: '', dbRootB64: '', newRootPwd: '',
                     selectedGroup: null, selectedGroupOrders: null, editingId: null, editData: { products: [] }, editPassword: '',
                     showCreatePwd: false, showEditPwd: false, showSuperPwd: false, showActionPwd: false, showNewRootPwd: false,
@@ -259,7 +317,33 @@
                 }
             },
             computed: { 
-                activeGroups() { return (this.groups || []).filter(g => !g.is_archived); } 
+                activeDisplayGroups() {
+                    return (this.groups || []).filter(g => !g.is_archived).sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+                },
+                activeManagedGroups() {
+                    return (this.groups || []).filter(g => !g.is_archived).sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+                },
+                closedManagedGroups() {
+                    const now = new Date();
+                    return (this.groups || []).filter(g => {
+                        if (!g.is_archived) return false;
+                        const baseDate = g.updated_at ? new Date(g.updated_at) : (g.deadline ? new Date(g.deadline) : new Date(g.created_at || now));
+                        const diff = (now - baseDate) / (1000 * 60 * 60 * 24);
+                        return diff <= 7;
+                    });
+                },
+                archivedHistoryGroups() {
+                    const now = new Date();
+                    return (this.groups || []).filter(g => {
+                        if (!g.is_archived) return false;
+                        const baseDate = g.updated_at ? new Date(g.updated_at) : (g.deadline ? new Date(g.deadline) : new Date(g.created_at || now));
+                        const diff = (now - baseDate) / (1000 * 60 * 60 * 24);
+                        return diff > 7;
+                    });
+                },
+                sortedGroupsForAdmin() {
+                    return (this.groups || []).sort((a, b) => new Date(b.start_time) - new Date(a.start_time));
+                }
             },
             methods: {
                 navigate(page) { this.currentPage = page; this.isMobileMenuOpen = false; this.fetchAllData(); window.scrollTo({ top: 0, behavior: 'smooth' }); },
@@ -280,27 +364,40 @@
                 calculateSubtotal(orderItems, groupProducts) {
                     if (!orderItems || !groupProducts) return 0;
                     let total = 0;
-                    Object.entries(orderItems).forEach(([name, qty]) => {
-                        const p = groupProducts.find(p => (p.spec ? `${p.name}(${p.spec})` : p.name) === name);
+                    Object.entries(orderItems).forEach(([combinedName, qty]) => {
+                        const p = groupProducts.find(p => (p.spec ? `${p.name}(${p.spec})` : p.name) === combinedName);
                         if (p) total += (Number(p.price) * (Number(qty) || 0));
                     });
                     return total;
                 },
+                isPreOpen(startTime) { return startTime && new Date(startTime) > new Date(); },
+                formatTime(time) { 
+                    if(!time) return '';
+                    return new Date(time).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', hour12: false }); 
+                },
+                formatDate(date) { 
+                    if(!date) return '';
+                    return new Date(date).toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei' }); 
+                },
                 verifySuperAdmin() { if (btoa(this.superAdminPwdInput.trim()) === this.dbRootB64) { this.superAdminAuthenticated = true; this.fetchAllData(); } else { alert('❌ 密碼錯誤！'); this.superAdminPwdInput = ''; } },
                 async updateRootPwd() {
-                    if(!this.newRootPwd) return;
-                    const newB64 = btoa(this.newRootPwd.trim());
-                    await _supabase.from('settings').update({ value: newB64 }).eq('key', 'root_pwd_b64');
-                    alert('✅ 密碼修改成功！'); this.dbRootB64 = newB64; this.newRootPwd = '';
+                    if(!this.newRootPwd.trim()) return alert('⚠️ 新密碼不可為空');
+                    await _supabase.from('settings').update({ value: btoa(this.newRootPwd.trim()) }).eq('key', 'root_pwd_b64');
+                    alert('✅ 密碼修改成功'); 
+                    this.newRootPwd = '';
+                    this.fetchAllData();
                 },
                 viewDetail(group) { this.selectedGroup = group; this.selectedGroupOrders = this.getOrdersByGroup(group.id); },
                 openActionModal(type, target, group) {
                     this.actionModal.password = ''; this.showActionPwd = false; this.actionModal.authenticated = false;
                     this.actionModal.type = type; this.actionModal.targetOrder = target ? JSON.parse(JSON.stringify(target)) : null; this.actionModal.targetGroup = group;
-                    if(type === 'delete') { this.actionModal.title = "⚠️ 刪除訂單確認"; this.actionModal.message = `確定要刪除「${target.name}」的訂單嗎？`; }
-                    else if(type === 'archive') { this.actionModal.title = "📁 變更活動狀態"; this.actionModal.message = `確定要更換「${target.title}」的活動狀態嗎？`; }
+                    if(type === 'delete') { this.actionModal.title = "⚠️ 刪除確認"; this.actionModal.message = `確定要刪除鄰居「${target.name}」的訂單嗎？`; }
+                    else if(type === 'archive') { 
+                        this.actionModal.title = target.is_archived ? "🔓 恢復活動" : "📁 提前結單確認"; 
+                        this.actionModal.message = target.is_archived ? `確定要恢復「${target.title}」活動嗎？` : `確定要提前結單並關閉「${target.title}」活動嗎？`; 
+                    }
                     else if(type === 'edit_order') { 
-                        this.actionModal.title = "✍️ 訂單資料修正"; 
+                        this.actionModal.title = "✍️ 修正訂單內容"; 
                         const itemsObj = {};
                         group.products.forEach(p => { const key = p.spec ? `${p.name}(${p.spec})` : p.name; itemsObj[key] = target.items[key] || 0; });
                         this.actionModal.editItems = itemsObj;
@@ -312,47 +409,88 @@
                         const pwd = this.actionModal.password.trim();
                         if (pwd === this.actionModal.targetGroup.admin_password || btoa(pwd) === this.dbRootB64) {
                             this.actionModal.authenticated = true;
-                            if(this.actionModal.type !== 'edit_order') this.executeAction();
-                        } else alert('❌ 密碼錯誤！');
-                        return;
+                            if(this.actionModal.type !== 'edit_order') {
+                                this.executeAction();
+                            }
+                            return; 
+                        } else {
+                            alert('❌ 密碼錯誤！');
+                            return;
+                        }
                     }
+                    
                     this.executeAction();
                 },
                 async executeAction() {
-                    const type = this.actionModal.type;
-                    if (type === 'delete') await _supabase.from('orders').delete().eq('id', this.actionModal.targetOrder.id);
-                    else if (type === 'archive') await _supabase.from('groups').update({ is_archived: !this.actionModal.targetGroup.is_archived }).eq('id', this.actionModal.targetGroup.id);
-                    else if (type === 'edit_order') {
-                        const o = this.actionModal.targetOrder; const finalItems = {};
-                        Object.entries(this.actionModal.editItems).forEach(([k,v]) => { if(v > 0) finalItems[k] = v; });
-                        await _supabase.from('orders').update({ name: o.name, phone: o.phone, unit: o.unit, items: finalItems }).eq('id', o.id);
+                    try {
+                        const type = this.actionModal.type;
+                        let res;
+
+                        if (type === 'delete') {
+                            res = await _supabase.from('orders').delete().eq('id', this.actionModal.targetOrder.id);
+                        } else if (type === 'archive') {
+                            const nextStatus = !this.actionModal.targetGroup.is_archived;
+                            res = await _supabase.from('groups').update({ is_archived: nextStatus }).eq('id', this.actionModal.targetGroup.id);
+                        } else if (type === 'edit_order') {
+                            const o = this.actionModal.targetOrder; const finalItems = {};
+                            Object.entries(this.actionModal.editItems).forEach(([k,v]) => { if(v > 0) finalItems[k] = v; });
+                            res = await _supabase.from('orders').update({ name: o.name, phone: o.phone, unit: o.unit, items: finalItems }).eq('id', o.id);
+                        }
+
+                        if (res && res.error) {
+                            alert('❌ 資料庫操作失敗：\n' + res.error.message);
+                        } else {
+                            this.actionModal.show = false;
+                            this.fetchAllData();
+                            alert('✅ 操作成功');
+                        }
+                    } catch (err) {
+                        alert('❌ 系統異常：' + err.message);
                     }
-                    this.actionModal.show = false; this.fetchAllData(); alert('✅ 操作成功');
                 },
                 async createGroup() {
-                    if(!this.newGroup.title || !this.newGroup.admin_password) return alert('⚠️ 標題與密碼必填');
+                    if(!this.newGroup.title || !this.newGroup.admin_password || !this.newGroup.creator) return alert('⚠️ 必填未填');
                     this.loading = true;
-                    const { error } = await _supabase.from('groups').insert([this.newGroup]);
-                    if (error) alert(error.message); else { alert('✅ 開團成功'); this.newGroup = { title:'', description:'', deadline:'', creator:'', group_url:'', admin_password:'', products:[{name:'',spec:'',price:0}] }; this.navigate('list'); }
+                    const localTimeStr = this.newGroup.start_time ? new Date(this.newGroup.start_time + '+08:00').toISOString() : new Date().toISOString();
+                    const payload = {...this.newGroup, start_time: localTimeStr};
+                    
+                    const { error } = await _supabase.from('groups').insert([payload]);
+                    if (error) alert(error.message); else { alert('✅ 開團成功'); this.navigate('list'); }
                     this.loading = false;
                 },
                 async submitOrder(groupId, productList) {
                     const form = this.orderForm[groupId]; const finalItems = {}; let totalInput = 0;
-                    Object.entries(form.items).forEach(([idx, qty]) => { if (qty > 0 && productList[idx]) { const combined = productList[idx].spec ? `${productList[idx].name}(${productList[idx].spec})` : productList[idx].name; finalItems[combined] = qty; totalInput += qty; } });
-                    if (totalInput === 0 || !form.name || !form.phone) return alert('⚠️ 填寫不完整');
+                    Object.entries(form.items).forEach(([idx, qty]) => { if (qty > 0) { const combined = productList[idx].spec ? `${productList[idx].name}(${productList[idx].spec})` : productList[idx].name; finalItems[combined] = qty; totalInput += qty; } });
+                    if (totalInput === 0 || !form.name || !form.phone) return alert('⚠️ 資料不完整');
                     await _supabase.from('orders').insert([{ group_id: groupId, name: form.name.trim(), phone: form.phone.trim(), unit: form.unit.trim(), items: finalItems }]);
                     alert('✅ 訂購成功！'); form.items = {}; this.fetchAllData();
                 },
-                startEdit(group) { this.editingId = group.id; this.editData = JSON.parse(JSON.stringify(group)); this.editPassword = ''; this.showEditPwd = false; },
+                startEdit(group) { 
+                    this.editingId = group.id; 
+                    this.editData = JSON.parse(JSON.stringify(group)); 
+                    
+                    if (this.editData.start_time) {
+                        const tzDate = new Date(this.editData.start_time);
+                        tzDate.setHours(tzDate.getHours() + 8);
+                        this.editData.start_time = tzDate.toISOString().slice(0, 16);
+                    }
+
+                    this.editPassword = ''; this.showEditPwd = false; 
+                },
                 async saveEdit(id, originalPwd) {
                     if (this.editPassword !== originalPwd && btoa(this.editPassword.trim()) !== this.dbRootB64) return alert('❌ 密碼錯誤');
-                    await _supabase.from('groups').update({ title: this.editData.title, deadline: this.editData.deadline, description: this.editData.description, products: this.editData.products }).eq('id', id);
-                    this.editingId = null; this.fetchAllData(); alert('✅ 活動內容已更新');
+                    
+                    if (this.editData.start_time && !this.editData.start_time.endsWith('Z')) {
+                        this.editData.start_time = new Date(this.editData.start_time + '+08:00').toISOString();
+                    }
+
+                    await _supabase.from('groups').update(this.editData).eq('id', id);
+                    this.editingId = null; this.fetchAllData(); alert('✅ 已儲存修正');
                 },
                 exportCSV(groupId, title) {
                     const groupOrders = (this.orders || []).filter(o => o.group_id === groupId);
                     const group = this.groups.find(g => g.id === groupId);
-                    let csv = '姓名,電話,部門/戶別,總件數,總金額,明細\n';
+                    let csv = '姓名,電話,部門/戶別,件數,總額,明細\n';
                     groupOrders.forEach(o => { 
                         const total = this.calculateSubtotal(o.items, group.products);
                         const items = Object.entries(o.items).filter(([k,v])=>v>0).map(([k,v])=>`${k}x${v}`).join(' '); 
