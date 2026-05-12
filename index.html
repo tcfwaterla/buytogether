@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>團購管理系統 V7.3</title>
+    <title>團購管理系統</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -31,12 +31,13 @@
                     <nav class="mt-4">
                         <button @click="navigate('create')" :class="{'bg-blue-600': currentPage === 'create'}" class="w-full text-left px-6 py-4 hover:bg-slate-800 transition flex items-center">📢 我要開團</button>
                         <button @click="navigate('list')" :class="{'bg-blue-600': currentPage === 'list'}" class="w-full text-left px-6 py-4 hover:bg-slate-800 transition flex items-center">🛒 進行中團購</button>
-                        <button @click="navigate('manage')" :class="{'bg-blue-600': currentPage === 'manage'}" class="w-full text-left px-6 py-4 hover:bg-slate-800 transition flex items-center">⚙️ 管理團購</button>
+                        <button @click="navigate('manage')" :class="{'bg-blue-600': currentPage === 'manage'}" class="w-full text-left px-6 py-4 hover:bg-slate-800 transition flex items-center">⚙️ 管理團購項目</button>
                         <button @click="navigate('super_admin')" :class="{'bg-purple-600': currentPage === 'super_admin'}" class="w-full text-left px-6 py-4 hover:bg-slate-800 transition flex items-center mt-2 border-t border-slate-700">🔑 後台管理</button>
                     </nav>
                 </div>
                 <div class="p-6 text-xs text-slate-500 border-t border-slate-800 text-center">
                     <p>Copyright Jeff Teng 2026</p>
+                    <p>v7.3</p>
                 </div>
             </aside>
 
